@@ -14,6 +14,24 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("daisyui")],
+  daisyui: {
+    themes: [
+      {
+        light: {
+          ...require("daisyui/src/theming/themes")["bumblebee"],
+          "--background": "#eee",
+
+          "primary-content": "#000",
+          primary: "#2563eb",
+        },
+        dark: {
+          ...require("daisyui/src/theming/themes")["dark"],
+          "primary-content": "#fff",
+          primary: "#2563eb",
+        },
+      },
+    ],
+  },
 };
 export default config;
