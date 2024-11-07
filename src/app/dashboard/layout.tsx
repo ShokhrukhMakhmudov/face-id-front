@@ -5,6 +5,7 @@ import queryClient from "../../../lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import Loader from "@/components/Loader";
 import Header from "@/components/Header";
+import UserDeleteModal from "@/components/Modals/UserDeleteModal";
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
@@ -45,7 +46,9 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <div className="h-full w-full" data-theme={darkMode ? "dark" : "light"}>
+    <div
+      className="w-full flex-grow-[1]"
+      data-theme={darkMode ? "dark" : "light"}>
       <Header setDarkMode={setDarkMode} />
 
       <main>
@@ -53,6 +56,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => {
           {children}
         </QueryClientProvider>
       </main>
+      {/* <UserDeleteModal /> */}
     </div>
   );
 };

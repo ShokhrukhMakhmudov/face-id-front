@@ -17,7 +17,7 @@ export default function ImageInput({
     }
   };
 
-  if (photo) {
+  if (photo && !selectedFile) {
     return (
       <>
         <input
@@ -30,11 +30,12 @@ export default function ImageInput({
 
         <label
           htmlFor="fileInput"
-          className="cursor-pointer border border-dashed border-gray-400 w-full h-full flex items-center justify-center rounded-xl"
+          className="cursor-pointer border border-dashed border-gray-400 w-full max-w-[220px] h-[270px] flex items-center justify-center rounded-xl hover:opacity-30"
           style={{
-            backgroundImage: selectedFile ? `url(${selectedFile})` : "none",
+            backgroundImage: `url(${photo})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
           }}></label>
       </>
     );
@@ -59,6 +60,7 @@ export default function ImageInput({
           backgroundImage: selectedFile ? `url(${selectedFile})` : "none",
           backgroundSize: "cover",
           backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
         }}>
         {!selectedFile && <span className="text-4xl text-gray-400">+</span>}
       </label>

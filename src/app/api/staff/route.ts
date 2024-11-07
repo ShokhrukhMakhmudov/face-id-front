@@ -12,7 +12,10 @@ export async function GET(req: Request) {
     });
   }
 
-  return new Response(JSON.stringify({ error: "Xatolik yuz berdi!" }), {
-    status: 400,
-  });
+  return new Response(
+    JSON.stringify({ error: "Xatolik yuz berdi!", success: false }),
+    {
+      status: 400,
+    }
+  );
 }

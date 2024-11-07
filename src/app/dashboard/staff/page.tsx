@@ -2,8 +2,13 @@
 import Loader from "@/components/Loader";
 import { Section, User } from "@/types";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import {
+  MouseEvent,
+  MouseEventHandler,
+  SyntheticEvent,
+  useEffect,
+  useState,
+} from "react";
 
 export default function page() {
   const [formData, setFormData] = useState({
@@ -50,6 +55,43 @@ export default function page() {
     return <Loader />;
   }
 
+  function openDeleteModal(userId: string, userName: string) {
+    (
+      document.getElementById("userDeleteModalBtn") as HTMLButtonElement
+    ).setAttribute("data-id", userId);
+    (
+      document.getElementById("userDeleteModalTitle") as HTMLElement
+    ).textContent = `${userName}`;
+
+    (document.getElementById("userDeleteModal") as HTMLDialogElement)
+      ?.closest("dialog")
+      ?.showModal();
+  }
+
+  async function deleteUser(event: MouseEvent) {
+    const userId = (event.target as HTMLButtonElement).dataset.id;
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost:8088/user/delete", {
+        method: "PUT",
+        body: JSON.stringify({ id: userId }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+      if (result?.success) {
+        alert("Xodim muvaffaqiyatli o'chirildi");
+        setRefresh(!refresh);
+      } else {
+        throw new Error(result?.message);
+      }
+    } catch (error) {
+      alert("O'chirishda xatolik yuz berdi!");
+    }
+    setLoading(false);
+  }
   return (
     <>
       <section className="mt-3">
@@ -99,7 +141,8 @@ export default function page() {
                         {sections && sections[sectionId]}
                       </td>
                       <td className="flex items-center justify-end gap-3">
-                        <button
+                        <Link
+                          href={`/dashboard/staff/edit/${_id.toString()}`}
                           className="btn btn-ghost flex items-center gap-2 text-lg font-semibold text-primary-content"
                           onClick={() => {}}>
                           <span>
@@ -120,10 +163,15 @@ export default function page() {
                             </svg>
                           </span>
                           Tahrirlash
-                        </button>
+                        </Link>
                         <button
                           className="btn btn-ghost flex items-center gap-2  text-lg font-semibold text-primary-content"
-                          onClick={() => {}}>
+                          onClick={() =>
+                            openDeleteModal(
+                              _id.toString(),
+                              lastname + " " + name
+                            )
+                          }>
                           <span>
                             <svg
                               stroke="currentColor"
@@ -147,6 +195,45 @@ export default function page() {
           </table>
         </div>
       </section>
+      <dialog className="modal text-primary-content" id="userDeleteModal">
+        <div className="modal-box">
+          <h3 className="text-2xl font-bold">Xodimni o'chirish!</h3>
+          <p
+            id="userDeleteModalTitle"
+            className="text-2xl py-4 font-semibold text-primary"></p>
+          <p className="text-xl mb-5">
+            Ushbu xodimdi o'chirishga ishonchingiz komilmi?
+          </p>
+          <div className="flex items-center gap-3 justify-end">
+            <button
+              id="userDeleteModalBtn"
+              className="btn btn-success text-white text-xl"
+              onClick={deleteUser}>
+              Xa
+            </button>
+            <button
+              className="btn btn-error text-white text-xl"
+              onClick={() =>
+                (
+                  document.getElementById(
+                    "userDeleteModal"
+                  ) as HTMLDialogElement
+                )
+                  .closest("dialog")
+                  ?.close()
+              }>
+              Yo'q
+            </button>
+          </div>
+        </div>
+        <button
+          className="modal-backdrop"
+          onClick={() =>
+            (document.getElementById("userDeleteModal") as HTMLDialogElement)
+              .closest("dialog")
+              ?.close()
+          }></button>
+      </dialog>
     </>
   );
 }

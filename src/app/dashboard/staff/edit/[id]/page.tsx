@@ -4,14 +4,18 @@ import { Section } from "@/types";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 
-export default function page() {
+export default function page({ params }: { params: { id: string } }) {
+  const { id } = params;
   const [formData, setFormData] = useState({
     name: "",
     lastname: "",
-    section: "",
+    sectionId: "",
+    photo: null,
   });
+  console.log(formData);
+
   const [file, setFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<null | string>(null);
   const [sections, setSections] = useState<null | Section[]>(null);
 
@@ -29,7 +33,22 @@ export default function page() {
     }
 
     fetchSections();
-  }, []);
+
+    async function fetchUser() {
+      try {
+        const response = await fetch(`/api/staff/member?id=${id}`);
+        const result = await response.json();
+        if (!result.success) {
+          alert("Foydalanuvchi topilmadi");
+          router.push("/dashboard/staff");
+        }
+        setFormData(result.user);
+      } catch (error) {
+        console.error("Error fetching Staff:", error);
+      }
+    }
+    fetchUser();
+  }, [id]);
 
   // Обработчик изменения значений полей формы
   const handleChange = (
@@ -87,7 +106,7 @@ export default function page() {
           onSubmit={handleSubmit}>
           <div className="form-control">
             <div className="flex sm:flex-row flex-col items-center gap-10">
-              <ImageInput setFile={setFile} />
+              <ImageInput setFile={setFile} photo={formData.photo} />
               <div className="w-full">
                 <label className="label">
                   <span className="label-text text-lg">Familiya</span>
@@ -122,11 +141,11 @@ export default function page() {
                   disabled={!sections ? true : false}
                   required
                   onChange={handleChange}
-                  value={formData.section}>
+                  value={formData.sectionId}>
                   <option value="">Bo'limni tanlang</option>
                   {sections &&
                     sections?.map((section) => (
-                      <option key={section._id} value={section._id}>
+                      <option key={section._id} value={section._id.toString()}>
                         {section.name}
                       </option>
                     ))}

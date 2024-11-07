@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   const { id } = await req.json();
 
   try {
-    const sectionCheck = await User.find({ section: id });
+    const sectionCheck = await User.find({ sectionId: id });
     if (!sectionCheck.length) {
       const section = await Section.findByIdAndDelete(id);
       if (section) {

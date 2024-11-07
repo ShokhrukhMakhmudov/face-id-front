@@ -1,6 +1,7 @@
 "use client";
 import Loader from "@/components/Loader";
 import { Section } from "@/types";
+import { set } from "mongoose";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 
@@ -76,15 +77,17 @@ export default function page() {
 
       const result = await response.json();
 
-      if (result.success) {
+      if (result?.success) {
         alert("Bo'lim muvaffaqiyatli o'chirildi!");
         window.location.reload();
       } else {
-        setError("Xatolik: " + result.message);
+        setError("Xatolik: " + result.error);
       }
     } catch (error) {
       setError("Malumotlarni saqlashda xatolik yuz berdi.");
     }
+
+    setLoading(false);
   };
 
   const handleEdit = (id: string, name: string) => {

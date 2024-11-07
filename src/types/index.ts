@@ -20,3 +20,15 @@ export type Visit = {
   visitPhoto: string;
   status: string;
 };
+
+export type ReportData = {
+  [key: string]: {
+    sectionName: string;
+    users: {
+      userId: string;
+      userName: string;
+      enterTimestamp: string;
+      status: string;
+    }[];
+  };
+};
