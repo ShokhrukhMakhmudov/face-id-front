@@ -7,4 +7,4 @@ const visitSchema = new mongoose.Schema({
   status: String,
 });
 
-export default mongoose.models?.Visit || mongoose.model("Visit", visitSchema);
+export default mongoose.models.Visit || mongoose.model("Visit", visitSchema);

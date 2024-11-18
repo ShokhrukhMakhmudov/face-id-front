@@ -2,7 +2,7 @@
 import VisitsList from "@/components/VisitsList";
 import { useQuery } from "@tanstack/react-query";
 import { FormEvent, useEffect, useState } from "react";
-import { fetchUsersAndSections, fetchVisits } from "../../../lib/queries";
+import { fetchVisits } from "../../../lib/queries";
 import { Visit } from "@/types";
 import DownloadButton from "@/components/DownloadButton";
 
