@@ -1,9 +1,26 @@
-// components/DownloadButton.js
+"use client";
 import React, { memo } from "react";
+import Loader from "../Loader";
 
-const DownloadButton = memo(function Button({ date }: { date: string }) {
+const DownloadButton = memo(function Button({
+  date,
+  disabled,
+  type = null,
+  label = "davomat",
+}: {
+  date: string;
+  disabled: boolean;
+  type?: string | null;
+  label?: string;
+}) {
+  const [loading, setLoading] = React.useState(false);
+  const url =
+    type === "attendance"
+      ? `/api/report/attendance?date=${date}`
+      : `/api/report?date=${date}`;
   const handleDownload = () => {
-    fetch("/api/report?date=" + date)
+    setLoading(true);
+    fetch(url)
       .then((response) => response.blob())
       .then((blob) => {
         const url = window.URL.createObjectURL(new Blob([blob]));
@@ -14,11 +31,19 @@ const DownloadButton = memo(function Button({ date }: { date: string }) {
         link.click();
         link.parentNode?.removeChild(link);
       })
-      .catch((error) => console.error("Ошибка при скачивании файла:", error));
+      .catch((error) => console.error("Ошибка при скачивании файла:", error))
+      .finally(() => setLoading(false));
   };
 
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
-    <button className="btn btn-success text-white" onClick={handleDownload}>
+    <button
+      className="btn btn-success text-white"
+      onClick={handleDownload}
+      disabled={!disabled}>
       <svg
         stroke="currentColor"
         fill="currentColor"
@@ -32,7 +57,7 @@ const DownloadButton = memo(function Button({ date }: { date: string }) {
           stroke="none"
         />
       </svg>
-      <span>Davomat</span>
+      <span className="capitalize">{label}</span>
     </button>
   );
 });

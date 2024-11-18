@@ -1,16 +1,19 @@
 "use client";
 import ImageInput from "@/components/ImageInput";
-import { Section } from "@/types";
+import Loader from "@/components/Loader";
+import { Section, User } from "@/types";
 import { useRouter } from "next/navigation";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 
 export default function page({ params }: { params: { id: string } }) {
   const { id } = params;
-  const [formData, setFormData] = useState({
+  const [initialData, setInitialData] = useState<null | User>(null);
+  const [formData, setFormData] = useState<User>({
+    _id: "",
     name: "",
     lastname: "",
     sectionId: "",
-    photo: null,
+    photo: "",
   });
   console.log(formData);
 
@@ -18,6 +21,7 @@ export default function page({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<null | string>(null);
   const [sections, setSections] = useState<null | Section[]>(null);
+  console.log(file);
 
   const router = useRouter();
 
@@ -43,11 +47,14 @@ export default function page({ params }: { params: { id: string } }) {
           router.push("/dashboard/staff");
         }
         setFormData(result.user);
+        setInitialData(result.user);
       } catch (error) {
         console.error("Error fetching Staff:", error);
       }
     }
     fetchUser();
+
+    setLoading(false);
   }, [id]);
 
   // Обработчик изменения значений полей формы
@@ -64,36 +71,50 @@ export default function page({ params }: { params: { id: string } }) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    if (!file) {
-      setError("Rasm yuklash kerak");
+
+    // Определяем, какие данные изменились
+    const sendData = new FormData();
+
+    if (formData.name !== initialData?.name)
+      sendData.append("name", formData.name);
+    if (formData.lastname !== initialData?.lastname)
+      sendData.append("lastname", formData.lastname);
+    if (formData.sectionId !== initialData?.sectionId)
+      sendData.append("sectionId", formData.sectionId);
+    if (file) sendData.append("file", file);
+    setLoading(false);
+
+    if (sendData.entries().next().done) {
+      alert("O'zgartirilgan ma'lumotlar mavjud emas!");
       setLoading(false);
       return;
     }
 
-    const sendData = new FormData();
-    sendData.append("file", file);
-    sendData.append("name", formData.name);
-    sendData.append("lastname", formData.lastname);
-    sendData.append("section", formData.section);
-
     try {
-      const response = await fetch("http://localhost:8088/user/add", {
-        method: "POST",
+      sendData.append("_id", formData._id);
+      const response = await fetch("http://localhost:8088/user/update", {
+        method: "PUT",
         body: sendData,
       });
 
       const result = await response.json();
 
       if (result.success) {
-        alert("Bitiruvchi muvaffaqiyatli qo'shildi!");
+        alert("Ma'lumotlar muvaffaqiyatli o'zgartirildi!");
       } else {
-        setError("Xatolik: " + result.message);
+        setError("Xatolik: " + result.error);
       }
     } catch (error) {
       setError("Malumotlarni saqlashda xatolik yuz berdi.");
     }
     setLoading(false);
+
+    router.push("/dashboard/staff");
   };
+
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <section className="mt-3">
@@ -136,12 +157,12 @@ export default function page({ params }: { params: { id: string } }) {
                   <span className="label-text text-lg">Bo'lim</span>
                 </label>
                 <select
-                  name="section"
+                  name="sectionId"
                   className="select select-bordered w-full text-xl text-primary-content"
                   disabled={!sections ? true : false}
                   required
                   onChange={handleChange}
-                  value={formData.sectionId}>
+                  value={formData?.sectionId}>
                   <option value="">Bo'limni tanlang</option>
                   {sections &&
                     sections?.map((section) => (
@@ -156,7 +177,7 @@ export default function page({ params }: { params: { id: string } }) {
           {error && <p style={{ color: "red" }}>{error}</p>}
           <div className="form-control mt-6">
             <button className="btn btn-primary text-white text-lg">
-              Qo'shish
+              O'zgartirish
             </button>
           </div>
         </form>

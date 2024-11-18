@@ -1,11 +1,11 @@
 import ExcelJS from "exceljs";
 import fs from "fs";
 import path from "path";
-import Section from "../../../../models/Section";
-import User from "../../../../models/User";
-import Visit from "../../../../models/Visit";
-import connectMongoDb from "../../../../lib/mongodb";
-import { ReportData, Visit as VisitType } from "@/types";
+import Section from "../../../../../models/Section";
+import User from "../../../../../models/User";
+import Visit from "../../../../../models/Visit";
+import connectMongoDb from "../../../../../lib/mongodb";
+import { ReportData, User as UserType, Visit as VisitType } from "@/types";
 
 const getVisitsByDate = async (targetDate: string) => {
   const startOfDay = new Date(targetDate);
@@ -15,7 +15,18 @@ const getVisitsByDate = async (targetDate: string) => {
   endOfDay.setHours(23, 59, 59, 999);
 
   const sections = await Section.find();
+
+  const sectionMap = sections.reduce((acc, section) => {
+    acc[section._id.toString()] = section.name;
+    return acc;
+  }, {} as { [key: string]: string });
+
   const users = await User.find();
+
+  const usersMap = users.reduce((acc: any, user: UserType) => {
+    acc[user._id.toString()] = user;
+    return acc;
+  }, {} as { [key: string]: UserType });
 
   const visits = await Visit.aggregate([
     // Фильтруем по дате
@@ -27,22 +38,6 @@ const getVisitsByDate = async (targetDate: string) => {
     // Сортируем по времени входа
     {
       $sort: { timestamp: 1 },
-    },
-    // Группируем по userId и сохраняем только самое раннее посещение
-    {
-      $group: {
-        _id: "$userId",
-        earliestVisit: { $last: "$$ROOT" },
-      },
-    },
-    // Проецируем результаты, оставляя только нужные поля
-    {
-      $project: {
-        _id: 0,
-        userId: "$_id",
-        timestamp: "$earliestVisit.timestamp",
-        status: "$earliestVisit.status",
-      },
     },
   ]);
   const visitsMap: { [key: string]: VisitType } = {};
@@ -61,28 +56,23 @@ const getVisitsByDate = async (targetDate: string) => {
     };
   });
 
-  users.forEach((user) => {
-    const userId: string = user._id.toString();
-    let enterTimestamp = "Kelmagan";
+  visits.forEach((visit) => {
+    const userId = visit.userId;
+    const user = usersMap[userId];
+    const date = new Date(visit.timestamp as string);
 
-    if (visitsMap[userId]) {
-      const date = new Date(visitsMap[userId].timestamp as string);
-
-      // Получение времени в формате HH:mm
-      const hours = String(date.getHours()).padStart(2, "0");
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-      const time = `${hours}:${minutes}`;
-      enterTimestamp = time;
-    }
+    // Получение времени в формате HH:mm
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const time = `${hours}:${minutes}`;
 
     reportData[user.sectionId].users.push({
       userId,
       userName: user.lastname + " " + user.name,
-      enterTimestamp,
-      status: visitsMap[userId]?.status,
+      enterTimestamp: time,
+      status: visit.status,
     });
   });
-
   return reportData;
 };
 
@@ -105,16 +95,24 @@ async function generateExcelReport(visits: ReportData, date: string) {
     });
 
     visits[sectionId].users.forEach((user) => {
-      worksheet.addRow({
-        name: user.userName,
-        timestamp: user.enterTimestamp,
-        status:
-          user.status === "checkin"
-            ? "Kirish"
-            : user.status === "checkout"
-            ? "Chiqish"
-            : "-",
-      });
+      worksheet
+        .addRow({
+          name: user.userName,
+          timestamp: user.enterTimestamp,
+          status:
+            user.status === "checkin"
+              ? "Kirish"
+              : user.status === "checkout"
+              ? "Chiqish"
+              : "-",
+        })
+        .eachCell((cell) => {
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: user.status === "checkout" ? "FF7171" : "79B1FB" },
+          };
+        });
     });
   }
 

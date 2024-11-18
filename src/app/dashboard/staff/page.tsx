@@ -2,21 +2,14 @@
 import Loader from "@/components/Loader";
 import { Section, User } from "@/types";
 import Link from "next/link";
-import {
-  MouseEvent,
-  MouseEventHandler,
-  SyntheticEvent,
-  useEffect,
-  useState,
-} from "react";
+import { FormEvent, MouseEvent, useEffect, useState } from "react";
 
 export default function page() {
-  const [formData, setFormData] = useState({
-    name: "",
-  });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<null | string>(null);
-  const [staff, setStaff] = useState<null | User[]>(null);
+  const [staff, setStaff] = useState<[] | User[]>([]);
+  const [filteredStaff, setFilteredStaff] = useState<[] | User[]>([]);
+  const [search, setSearch] = useState<string>("");
   const [sections, setSections] = useState<null | { [key: string]: string }>(
     null
   );
@@ -44,16 +37,15 @@ export default function page() {
         const response = await fetch("/api/staff");
         const result = await response.json();
         setStaff(result.staff);
+        setFilteredStaff(result.staff);
       } catch (error) {
         console.error("Error fetching Staff:", error);
       }
     }
     fetchStaff();
-  }, [refresh]);
 
-  if (loading) {
-    return <Loader />;
-  }
+    setLoading(false);
+  }, [refresh]);
 
   function openDeleteModal(userId: string, userName: string) {
     (
@@ -92,6 +84,29 @@ export default function page() {
     }
     setLoading(false);
   }
+
+  function handleSearchSubmit(e: FormEvent) {
+    e.preventDefault();
+    const searchText = search.toLowerCase().trim();
+    if (searchText === "") {
+      return setFilteredStaff(staff);
+    }
+
+    const filtered = (staff as User[]).filter(({ name, lastname }) =>
+      `${lastname + " " + name}`.toLowerCase().includes(searchText)
+    );
+    setFilteredStaff(filtered);
+  }
+
+  function handleSearchReset() {
+    setSearch("");
+    setFilteredStaff(staff);
+  }
+
+  if (loading) {
+    return <Loader />;
+  }
+
   return (
     <>
       <section className="mt-3">
@@ -99,7 +114,45 @@ export default function page() {
           <h2 className="text-xl md:text-3xl text-center bg-primary py-2 text-white font-semibold uppercase rounded-b-2xl mb-5">
             Xodimlar
           </h2>
+          <form className="flex gap-2" onSubmit={handleSearchSubmit}>
+            <label className="input input-bordered w-[700px] flex items-center gap-2">
+              <input
+                name="search"
+                type="text"
+                className="grow"
+                placeholder="Search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                disabled={staff ? false : true}
+              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+                className="h-4 w-4 opacity-70">
+                <path
+                  fillRule="evenodd"
+                  d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </label>
 
+            <button
+              className="btn btn-primary text-white text-lg"
+              type="submit"
+              disabled={staff ? false : true}>
+              Qidiruv
+            </button>
+            {search && (
+              <button
+                className="btn btn-error text-white text-lg"
+                onClick={handleSearchReset}
+                disabled={staff ? false : true}>
+                Tozalash
+              </button>
+            )}
+          </form>
           <table className="table table-lg ">
             <thead>
               <tr className="text-xl text-primary-content border-primary-content">
@@ -129,8 +182,8 @@ export default function page() {
               </tr>
             </thead>
             <tbody>
-              {staff &&
-                staff.map(
+              {filteredStaff.length ? (
+                filteredStaff.map(
                   ({ _id, name, lastname, sectionId, photo }, index) => (
                     <tr key={_id} className="border-primary-content">
                       <th>{index + 1}</th>
@@ -190,7 +243,16 @@ export default function page() {
                       </td>
                     </tr>
                   )
-                )}
+                )
+              ) : (
+                <tr>
+                  <th>
+                    <h2 className="w-full text-start text-primary-content text-2xl">
+                      Ma'lumot topilmadi!
+                    </h2>
+                  </th>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

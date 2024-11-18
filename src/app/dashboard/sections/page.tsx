@@ -9,7 +9,7 @@ export default function page() {
   const [formData, setFormData] = useState({
     name: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<null | string>(null);
   const [sections, setSections] = useState<null | Section[]>(null);
   const [refresh, setRefresh] = useState<boolean>(false);
@@ -25,6 +25,7 @@ export default function page() {
       }
     }
     fetchSections();
+    setLoading(false);
   }, [refresh]);
 
   // Обработчик изменения значений полей формы

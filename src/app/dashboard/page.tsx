@@ -7,17 +7,10 @@ import { Visit } from "@/types";
 import DownloadButton from "@/components/DownloadButton";
 
 export default function Home() {
-  const [data, setData] = useState(null);
   const [filteredData, setFilteredData] = useState<Visit[] | null>(null);
   const [search, setSearch] = useState("");
   const [events, setEvents] = useState([]);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-
-  const { data: usersAndSections, isLoading: usersAndSectionsLoading } =
-    useQuery({
-      queryKey: ["usersAndSections"],
-      queryFn: fetchUsersAndSections,
-    });
 
   const { data: visits, isLoading: visitsLoading } = useQuery({
     queryKey: ["visits", date],
@@ -92,7 +85,18 @@ export default function Home() {
             />
           </label>
 
-          <DownloadButton date={date} />
+          <div className="flex items-center gap-3">
+            <DownloadButton
+              date={date}
+              disabled={!!visits?.length}
+              label={"Safda"}
+            />
+            <DownloadButton
+              date={date}
+              disabled={!!visits?.length}
+              type={"attendance"}
+            />
+          </div>
         </div>
         <VisitsList
           data={filteredData ? filteredData : visits}
