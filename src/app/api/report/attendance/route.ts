@@ -4,6 +4,7 @@ import path from "path";
 import { User, Visit, Section } from "../../../../../models";
 import connectMongoDb from "../../../../../lib/mongodb";
 import { ReportData, User as UserType, Visit as VisitType } from "@/types";
+import { put } from "@vercel/blob";
 
 const getVisitsByDate = async (targetDate: string) => {
   const startOfDay = new Date(targetDate);
@@ -113,7 +114,7 @@ async function generateExcelReport(visits: ReportData, date: string) {
     });
   }
 
-  const filePath = path.join(process.cwd(), "public", "attendance_report.xlsx");
+  const filePath = path.join("/tmp", "attendance_report.xlsx");
   await workbook.xlsx.writeFile(filePath);
   return filePath;
 }
@@ -138,7 +139,10 @@ export async function GET(req: Request) {
 
     // Устанавливаем заголовки для скачивания файла
     const fileBuffer = fs.readFileSync(filePath);
-    return new Response(fileBuffer, {
+    const { url } = await put("attendance/attendance_report.xlsx", fileBuffer, {
+      access: "public",
+    });
+    return new Response(url, {
       headers: {
         "Content-Type":
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
