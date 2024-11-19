@@ -1,7 +1,5 @@
 import connectMongoDb from "../../../../lib/mongodb";
-import Visit from "../../../../models/Visit";
-import User from "../../../../models/User";
-import Section from "../../../../models/Section";
+import { Visit, User, Section } from "../../../../models";
 import mongoose from "mongoose";
 
 function addOneDay(dateString: string) {

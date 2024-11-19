@@ -1,5 +1,5 @@
 import connectMongoDb from "../../../../lib/mongodb";
-import Admin from "../../../../models/Admin";
+import { Admin } from "../../../../models";
 import jwt from "jsonwebtoken";
 
 export async function POST(req: Request) {

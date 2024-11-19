@@ -1,5 +1,5 @@
 import connectMongoDb from "../../../../lib/mongodb";
-import Section from "../../../../models/Section";
+import { Section } from "../../../../models";
 
 export async function GET(req: Request) {
   await connectMongoDb();

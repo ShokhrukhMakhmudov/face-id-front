@@ -1,9 +1,7 @@
 import ExcelJS from "exceljs";
 import fs from "fs";
 import path from "path";
-import Section from "../../../../models/Section";
-import User from "../../../../models/User";
-import Visit from "../../../../models/Visit";
+import { User, Visit, Section } from "../../../../models";
 import connectMongoDb from "../../../../lib/mongodb";
 import { ReportData, Visit as VisitType } from "@/types";
 

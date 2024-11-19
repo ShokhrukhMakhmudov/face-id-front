@@ -1,5 +1,5 @@
 import connectMongoDb from "../../../../lib/mongodb";
-import User from "../../../../models/User";
+import { User } from "../../../../models";
 export async function GET(req: Request) {
   await connectMongoDb();
 

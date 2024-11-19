@@ -1,6 +1,5 @@
 import connectMongoDb from "../../../../../lib/mongodb";
-import Section from "../../../../../models/Section";
-import User from "../../../../../models/User";
+import { Section, User } from "../../../../../models";
 export async function POST(req: Request) {
   await connectMongoDb();
 
