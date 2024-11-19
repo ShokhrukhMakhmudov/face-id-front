@@ -4,5 +4,7 @@ const SectionSchema = new mongoose.Schema({
   name: { type: String, required: true },
 });
 
-export default mongoose.models.Section ||
-  mongoose.model("Section", SectionSchema);
+const Section =
+  mongoose.models.Section || mongoose.model("Section", SectionSchema);
+
+export default Section;

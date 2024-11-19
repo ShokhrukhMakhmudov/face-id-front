@@ -2,7 +2,7 @@
 import VisitsList from "@/components/VisitsList";
 import { useQuery } from "@tanstack/react-query";
 import { FormEvent, useEffect, useState } from "react";
-import { fetchVisits } from "../../../lib/queries";
+import { fetchVisits, fetchUsersAndSections } from "../../../lib/queries";
 import { Visit } from "@/types";
 import DownloadButton from "@/components/DownloadButton";
 
@@ -11,6 +11,11 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [events, setEvents] = useState([]);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+
+  const { data: sectionAndUsers, isLoading: justLoading } = useQuery({
+    queryKey: ["sectionAndUsers"],
+    queryFn: () => fetchUsersAndSections(),
+  });
 
   const { data: visits, isLoading: visitsLoading } = useQuery({
     queryKey: ["visits", date],
