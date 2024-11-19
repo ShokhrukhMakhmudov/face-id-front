@@ -116,7 +116,7 @@ async function generateExcelReport(visits: ReportData, date: string) {
     });
   }
 
-  const filePath = path.join("/tmp", "attendance_report.xlsx");
+  const filePath = path.join(process.cwd(), "/tmp", "attendance_report.xlsx");
   await workbook.xlsx.writeFile(filePath);
   return filePath;
 }
