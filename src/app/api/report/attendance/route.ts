@@ -4,6 +4,7 @@ import path from "path";
 import { User, Visit, Section } from "../../../../../models";
 import connectMongoDb from "../../../../../lib/mongodb";
 import { ReportData, User as UserType, Visit as VisitType } from "@/types";
+import { put } from "@vercel/blob";
 
 const getVisitsByDate = async (targetDate: string) => {
   const startOfDay = new Date(targetDate);
@@ -83,7 +84,6 @@ async function generateExcelReport(visits: ReportData, date: string) {
     { header: "Kirish/Chiqish vaqti", key: "timestamp", width: 20 },
     { header: "Holati", key: "status", width: 15 },
   ];
-  console.log(visits);
 
   for (const sectionId in visits) {
     worksheet.addRow({
@@ -114,8 +114,9 @@ async function generateExcelReport(visits: ReportData, date: string) {
     });
   }
 
-  const filePath = path.join(process.cwd(), "public", "attendance_report.xlsx");
+  const filePath = path.join("/tmp", "attendance_report.xlsx");
   await workbook.xlsx.writeFile(filePath);
+
   return filePath;
 }
 
